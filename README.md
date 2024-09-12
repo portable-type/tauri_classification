@@ -15,7 +15,7 @@ Basic:
 
 ```
 main
-├──  dev
+├── dev
 ├── front
 └── back
 ```
