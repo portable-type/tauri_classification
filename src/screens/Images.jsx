@@ -1,21 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { readDir, BaseDirectory } from '@tauri-apps/plugin-fs';
+import { readDir, readFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+import TabSelector from '../components/TabSelector';
+import ImageGrid from '../components/ImageGrid';
 
 const Images = () => {
   const [eisaImages, setEisaImages] = useState([]);
   const [notEisaImages, setNotEisaImages] = useState([]);
+  const [activeTab, setActiveTab] = useState('Eisa');
 
   const loadImages = async () => {
     try {
       const eisaFiles = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
-      const eisaImagePaths = eisaFiles
-        .filter(file => file.name && file.name !== '.DS_Store')
-        .map(file => `${BaseDirectory.Document}/tauri-classification/images/Eisa/${file.name}`);
+      const eisaImagePaths = await Promise.all(
+        eisaFiles
+          .filter(file => file.name && file.name !== '.DS_Store')
+          .map(async (file) => {
+            const binary = await readFile(`tauri-classification/images/Eisa/${file.name}`, { baseDir: BaseDirectory.Document });
+            return URL.createObjectURL(new Blob([binary]));
+          })
+      );
 
       const notEisaFiles = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
-      const notEisaImagePaths = notEisaFiles
-        .filter(file => file.name && file.name !== '.DS_Store')
-        .map(file => `${BaseDirectory.Document}/tauri-classification/images/NotEisa/${file.name}`);
+      const notEisaImagePaths = await Promise.all(
+        notEisaFiles
+          .filter(file => file.name && file.name !== '.DS_Store')
+          .map(async (file) => {
+            const binary = await readFile(`tauri-classification/images/NotEisa/${file.name}`, { baseDir: BaseDirectory.Document });
+            return URL.createObjectURL(new Blob([binary]));
+          })
+      );
+
       setEisaImages(eisaImagePaths);
       setNotEisaImages(notEisaImagePaths);
     } catch (error) {
@@ -29,19 +43,10 @@ const Images = () => {
 
   return (
     <div>
-      <h2>Eisa Images</h2>
-      {eisaImages.map((imagePath, index) => (
-        <div key={index}>
-          <img src={imagePath} style={{ maxWidth: '100%', height: 'auto' }} />
-        </div>
-      ))}
+      <TabSelector activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <h2>NotEisa Images</h2>
-      {notEisaImages.map((imagePath, index) => (
-        <div key={index}>
-          <img src={imagePath} style={{ maxWidth: '100%', height: 'auto' }} />
-        </div>
-      ))}
+      {activeTab === 'Eisa' && <ImageGrid images={eisaImages} />}
+      {activeTab === 'NotEisa' && <ImageGrid images={notEisaImages} />}
     </div>
   );
 };

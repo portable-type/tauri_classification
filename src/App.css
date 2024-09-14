@@ -94,3 +94,64 @@ button {
   justify-content: center;
   height: 100vh;
 }
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.tab-button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+  justify-items: center;
+  margin: 20px;
+}
+
+.image-container {
+  width: 100%;
+  max-width: 256px;
+  height: auto;
+  border: 1px solid #ddd;
+}
+
+img {
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 1200px) {
+  .image-grid {
+    gap: 15px;
+  }
+}
+
+@media (max-width: 900px) {
+  .image-grid {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+  .image-grid {
+    gap: 5px;
+  }
+}
