@@ -29,33 +29,6 @@ impl<B: Backend> Normalizer<B> {
     }
 }
 
-trait GetVec {
-    fn get_vec(&self) -> Vec<u8>;
-}
-
-impl GetVec for TensorData {
-    fn get_vec(&self) -> Vec<u8> {
-        self.as_slice().unwrap().to_vec()
-    }
-}
-
-trait New {
-    fn new(image: Vec<u8>, annotation: Annotation) -> ImageDatasetItem;
-}
-
-impl New for ImageDatasetItem {
-    fn new(image: Vec<u8>, annotation: Annotation) -> Self {
-        let pixel_image: Vec<PixelDepth> = image
-            .into_iter()
-            .map(|value| PixelDepth::U8(value))
-            .collect();
-        Self {
-            image: pixel_image,
-            annotation,
-        }
-    }
-}
-
 #[derive(Clone)]
 pub struct ClassificationBatcher<B: Backend> {
     normalizer: Normalizer<B>,
@@ -106,16 +79,10 @@ impl<B: Backend> Batcher<ImageDatasetItem, ClassificationBatch<B>> for Classific
 
             new_image.into_raw()
         }
-
         let targets = items
             .iter()
-            .map(|item| image_as_vec_u8(item.clone()))
-            .map(|item| vec_to_rgba_image(item, 720, 720))
-            .map(|item| resize_image(item))
-            .map(|item| add_chennnels(&item))
-            .map(|item| TensorData::new(item, Shape::new([32, 32, 3])).get_vec())
-            .map(|item: Vec<u8>| ImageDatasetItem::new(item, Annotation::Label(0)))
             .map(|item| {
+                // Expect class label (int) as target
                 if let Annotation::Label(y) = item.annotation {
                     Tensor::<B, 1, Int>::from_data(
                         TensorData::from([(y as i64).elem::<B::IntElem>()]),
