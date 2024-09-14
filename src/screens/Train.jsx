@@ -1,43 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BaseDirectory, writeFile, mkdir, writeTextFile, readDir, copyFile } from '@tauri-apps/plugin-fs';
 import { v4 as uuidv4 } from 'uuid';
+import VideoPreview from '../components/VideoPreview';
+import LabelButtons from '../components/LabelButtons';
+import Controls from '../components/Controls';
+import CapturedImage from '../components/CapturedImage';
+import FileCounts from '../components/FileCounts';
 import '../App.css';
 
 const Train = ({ setCurrentView }) => {
-  const videoRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [label, setLabel] = useState(null);
   const [fileCountEisa, setFileCountEisa] = useState(0);
   const [fileCountNotEisa, setFileCountNotEisa] = useState(0);
-
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const constraints = {
-          video: {
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-        };
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (err) {
-        console.error("Error accessing camera: ", err);
-      }
-    };
-
-    startCamera();
-
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = videoRef.current.srcObject.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const countImages = async () => {
@@ -163,7 +138,7 @@ const Train = ({ setCurrentView }) => {
         console.log(`Image saved to ${folderPath} as ${fileName}.`);
 
         const countEisa = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
-        const countNotEisa = await readDir('tauri-classification/images/NotEisa', {  baseDir: BaseDirectory.Document });
+        const countNotEisa = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
         setFileCountEisa(countEisa.length);
         setFileCountNotEisa(countNotEisa.length);
       } catch (error) {
@@ -174,33 +149,20 @@ const Train = ({ setCurrentView }) => {
 
   return (
     <div className="train-container">
-      <video ref={videoRef} autoPlay playsInline className="video-preview" />
+      <VideoPreview onStreamError={(err) => console.error("Stream Error: ", err)} />
 
-      <div className="label-buttons">
-        <button className={`label-button ${label === 'Eisa' ? 'selected' : ''}`} onClick={() => setLabel('Eisa')}>Eisa</button>
-        <button className={`label-button ${label === 'NotEisa' ? 'selected' : ''}`} onClick={() => setLabel('NotEisa')}>Not Eisa</button>
-      </div>
+      <LabelButtons label={label} setLabel={setLabel} />
 
-      <div className="controls">
-        <button className="capture-button" onClick={captureImage} disabled={!label}>
-          Capture
-        </button>
-        <button className="train-button" onClick={() => {copyImages()}}>Save</button>
-        <button className="images-button" onClick={() => setCurrentView('Images')}>Images</button>
-      </div>
+      <Controls
+        onCapture={captureImage}
+        onSave={copyImages}
+        onShowImages={() => setCurrentView('Images')}
+        isCaptureDisabled={!label}
+      />
 
-      {capturedImage && (
-        <div className="captured-image-container">
-          <h3>撮影された画像</h3>
-          <img src={capturedImage} alt="Captured" className="captured-image" />
-        </div>
-      )}
+      <CapturedImage imageSrc={capturedImage} />
 
-      <div className="file-counts">
-        <h3>Image Counts</h3>
-        <p>Eisa: {fileCountEisa} files</p>
-        <p>Not Eisa: {fileCountNotEisa} files</p>
-      </div>
+      <FileCounts eisaCount={fileCountEisa} notEisaCount={fileCountNotEisa} />
     </div>
   );
 };
