@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BaseDirectory, writeFile, mkdir, writeTextFile } from '@tauri-apps/plugin-fs';
+import { BaseDirectory, writeFile, mkdir, writeTextFile, readDir, copyFile } from '@tauri-apps/plugin-fs';
 import { v4 as uuidv4 } from 'uuid';
 import '../App.css';
 
@@ -7,6 +7,8 @@ const Train = ({ setCurrentView }) => {
   const videoRef = useRef(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [label, setLabel] = useState(null);
+  const [fileCountEisa, setFileCountEisa] = useState(0);
+  const [fileCountNotEisa, setFileCountNotEisa] = useState(0);
 
   useEffect(() => {
     const startCamera = async () => {
@@ -36,6 +38,81 @@ const Train = ({ setCurrentView }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    const countImages = async () => {
+      try {
+        const countEisa = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
+        const countNotEisa = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
+
+        setFileCountEisa(countEisa.length);
+        setFileCountNotEisa(countNotEisa.length);
+      } catch (error) {
+        console.error("Error counting images: ", error);
+      }
+    };
+
+    countImages();
+  }, []);
+
+  const copyImages = async () => {
+    try {
+      const copyFiles = async (files, sourceDir, trainDir, testDir) => {
+        if (!files || files.length === 0) {
+          console.error(`No files found in ${sourceDir}`);
+          return;
+        }
+
+        const validFiles = files.filter(file => file && file.name && file.name !== '.DS_Store');
+
+        if (validFiles.length === 0) {
+          console.error(`No valid files to copy in ${sourceDir}`);
+          return;
+        }
+
+        const totalFiles = validFiles.length;
+        const trainCount = Math.floor(totalFiles * 0.8);
+
+        const shuffledFiles = validFiles.sort(() => 0.5 - Math.random());
+
+        for (let i = 0; i < totalFiles; i++) {
+          const file = shuffledFiles[i];
+
+          if (i < trainCount) {
+            await copyFile(
+              `tauri-classification/images/${sourceDir}/${file.name}`,
+              `tauri-classification/train/${trainDir}/${file.name}`,
+              {
+                fromPathBaseDir: BaseDirectory.Document,
+                toPathBaseDir: BaseDirectory.Document
+              }
+            );
+            console.log(`Copied ${file.name} to train/${trainDir}`);
+          } else {
+            await copyFile(
+              `tauri-classification/images/${sourceDir}/${file.name}`,
+              `tauri-classification/test/${testDir}/${file.name}`,
+              {
+                fromPathBaseDir: BaseDirectory.Document,
+                toPathBaseDir: BaseDirectory.Document
+              }
+            );
+            console.log(`Copied ${file.name} to test/${testDir}`);
+          }
+        }
+      };
+
+      const eisaFiles = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
+      await copyFiles(eisaFiles, 'Eisa', 'Eisa', 'Eisa');
+
+      const notEisaFiles = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
+      await copyFiles(notEisaFiles, 'NotEisa', 'NotEisa', 'NotEisa');
+
+      console.log('All images copied successfully!');
+    } catch (error) {
+      console.error("Error copying images: ", error);
+    }
+  };
 
   const captureImage = async () => {
     if (!label) {
@@ -84,6 +161,11 @@ const Train = ({ setCurrentView }) => {
 
         await writeFile(`${folderPath}/${fileName}`, uint8Array, { baseDir: BaseDirectory.Document });
         console.log(`Image saved to ${folderPath} as ${fileName}.`);
+
+        const countEisa = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
+        const countNotEisa = await readDir('tauri-classification/images/NotEisa', {  baseDir: BaseDirectory.Document });
+        setFileCountEisa(countEisa.length);
+        setFileCountNotEisa(countNotEisa.length);
       } catch (error) {
         console.error("Error saving image: ", error);
       }
@@ -99,12 +181,13 @@ const Train = ({ setCurrentView }) => {
         <button className={`label-button ${label === 'NotEisa' ? 'selected' : ''}`} onClick={() => setLabel('NotEisa')}>Not Eisa</button>
       </div>
 
-      <button className="capture-button" onClick={captureImage} disabled={!label}>
-        Capture
-      </button>
-
-      <button className="train-button" onClick={() => setCurrentView('Save')}>Save</button>
-      <button className="images-button" onClick={() => setCurrentView('Images')}>Images</button>
+      <div className="controls">
+        <button className="capture-button" onClick={captureImage} disabled={!label}>
+          Capture
+        </button>
+        <button className="train-button" onClick={() => {copyImages()}}>Save</button>
+        <button className="images-button" onClick={() => setCurrentView('Images')}>Images</button>
+      </div>
 
       {capturedImage && (
         <div className="captured-image-container">
@@ -112,6 +195,12 @@ const Train = ({ setCurrentView }) => {
           <img src={capturedImage} alt="Captured" className="captured-image" />
         </div>
       )}
+
+      <div className="file-counts">
+        <h3>Image Counts</h3>
+        <p>Eisa: {fileCountEisa} files</p>
+        <p>Not Eisa: {fileCountNotEisa} files</p>
+      </div>
     </div>
   );
 };
