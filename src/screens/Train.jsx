@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BaseDirectory, writeFile, mkdir } from '@tauri-apps/plugin-fs';
+import { BaseDirectory, writeFile, mkdir, writeTextFile } from '@tauri-apps/plugin-fs';
 import { v4 as uuidv4 } from 'uuid';
 import '../App.css';
 
@@ -71,9 +71,13 @@ const Train = ({ setCurrentView }) => {
 
         const uuid = uuidv4();
         const fileName = `${uuid}.png`;
-        const folderPath = `tauri-classification/train/${label}`;
+        const folderPath = `tauri-classification/images/${label}`;
 
         await mkdir(folderPath, { recursive: true, baseDir: BaseDirectory.Document });
+
+        const labelTxt = {"label": ["Eisa", "NotEisa"]};
+        const txtContents = JSON.stringify(labelTxt);
+        await writeTextFile('tauri-classification/class.json', txtContents, { baseDir: BaseDirectory.Document });
 
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
