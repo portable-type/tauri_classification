@@ -15,12 +15,17 @@ crate-type = ["lib", "cdylib", "staticlib"]
 tauri-build = { version = "2.0.0-rc", features = [] }
 
 [dependencies]
-tauri = { version = "2.0.0-rc", features = [] }
+tauri = { version = "2.0.0-rc", features = ["protocol-asset"] }
 tauri-plugin-shell = "2.0.0-rc"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 chrono = "0.4.38"
+burn = { version = "0.14.0", features = ["wgpu", "train", "vision", "network"] }
+flate2 = {version="1.0.33"}
+dirs = "5.0.1"
 tauri-plugin-fs = "2.0.0-rc"
+image = "0.25.2"
+
 
 [dependencies.tauri-plugin-sql]
 features = ["sqlite"] # or "postgres", or "mysql"
