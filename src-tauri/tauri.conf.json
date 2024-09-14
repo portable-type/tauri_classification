@@ -10,8 +10,7 @@
   },
   "plugins": {
     "fs": {
-      "requireLiteralLeadingDot": true,
-      "all": true
+      "requireLiteralLeadingDot": true
     }
   },
   "app": {
