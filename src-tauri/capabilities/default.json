@@ -9,11 +9,23 @@
     "core:default",
     "shell:allow-open",
     {
-      "identifier": [
-        "fs:write-all",
-        "fs:read-all",
-        "fs:allow-copy-file"
-      ],
+      "identifier": "fs:write-all",
+      "allow": [
+        {
+          "path": "**/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:read-all",
+      "allow": [
+        {
+          "path": "**/*"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-copy-file",
       "allow": [
         {
           "path": "**/*"
