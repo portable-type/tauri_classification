@@ -1,34 +1,10 @@
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-}
-
-.app {
-  display: flex;
-  height: 100vh;
-  flex-direction: column;
-}
-
-.header {
-  position: relative;
-  background-color: #f0f0f0;
-  padding: 10px;
-}
-
-.main-view {
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #fff;
-}
-
 .train-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
   text-align: center;
+  gap: 20px;
 }
 
 .video-preview {
@@ -36,10 +12,29 @@ body {
   height: 256px;
   border: 1px solid #ddd;
   background-color: #000;
-  position: fixed;
-  top: 50px;
-  left: 50%;
-  transform: translateX(-50%);
+}
+
+.label-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.label-button {
+  width: 100px;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.label-button.selected {
+  background-color: #007bff;
+  color: #fff;
 }
 
 .capture-button {
@@ -49,16 +44,10 @@ body {
   transform: translateX(-50%);
   width: 60px;
   height: 60px;
-  border: none;
   border-radius: 50%;
   background-color: #ccc;
-  color: #333;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .images-button {
@@ -67,16 +56,10 @@ body {
   left: 100px;
   width: 60px;
   height: 60px;
-  border: none;
   border-radius: 50%;
   background-color: #ccc;
-  color: #333;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .train-button {
@@ -85,38 +68,6 @@ body {
   right: 100px;
   width: 60px;
   height: 60px;
-  border: none;
-  border-radius: 50%;
-  background-color: #ccc;
-  color: #333;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.capture-button:focus {
-  outline: none;
-}
-
-.captured-image-container {
-  margin-top: 100px;
-}
-
-.captured-image {
-  width: 256px;
-  height: 256px;
-}
-
-.capture-button {
-  position: fixed;
-  bottom: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60px;
-  height: 60px;
   border-radius: 50%;
   background-color: #ccc;
   border: none;
@@ -124,7 +75,7 @@ body {
 }
 
 .captured-image-container {
-  margin-top: 100px;
+  margin-top: 20px;
 }
 
 .captured-image {
