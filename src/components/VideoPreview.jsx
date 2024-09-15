@@ -8,7 +8,7 @@ const VideoPreview = ({ videoRef, onStreamError }) => {
         const constraints = {
           video: {
             facingMode: 'environment',
-            width: { ideal: 1280 },
+            width: { ideal: 720 },
             height: { ideal: 720 }
           },
         };
