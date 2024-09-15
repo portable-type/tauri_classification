@@ -3,6 +3,7 @@
 mod data;
 mod dataset;
 mod model;
+mod predict;
 mod training;
 
 use burn::{
@@ -10,8 +11,12 @@ use burn::{
         wgpu::{Wgpu, WgpuDevice},
         Autodiff,
     },
-    optim::{momentum::MomentumConfig, SgdConfig},
+    data::dataset::vision::{Annotation, ImageDatasetItem, PixelDepth},
+    optim::SgdConfig,
+    prelude::Backend,
 };
+use model::ModelConfig;
+use predict::predict;
 use training::{train, TrainingConfig};
 
 #[tauri::command]
@@ -22,13 +27,19 @@ fn greet(name: &str) -> String {
 #[tauri::command]
 fn run_train() {
     train::<Autodiff<Wgpu>>(
-        TrainingConfig::new(SgdConfig::new().with_momentum(Some(MomentumConfig {
-            momentum: 0.9,
-            dampening: 0.,
-            nesterov: false,
-        }))),
+        TrainingConfig::new(ModelConfig::new(2, 512), SgdConfig::new()),
         WgpuDevice::default(),
     )
+}
+
+#[tauri::command]
+fn run_predict(item: Vec<u8>) -> String {
+    type MyBackend = Wgpu<f32, i32>;
+    let data = ImageDatasetItem {
+        image: item.into_iter().map(PixelDepth::U8).collect(),
+        annotation: Annotation::Label(0),
+    };
+    predict::<MyBackend>(WgpuDevice::default(), data)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -47,11 +58,7 @@ mod tests {
     #[test]
     fn check_train() {
         train::<Autodiff<Wgpu>>(
-            TrainingConfig::new(SgdConfig::new().with_momentum(Some(MomentumConfig {
-                momentum: 0.9,
-                dampening: 0.,
-                nesterov: false,
-            }))),
+            TrainingConfig::new(ModelConfig::new(2, 512), SgdConfig::new()),
             WgpuDevice::default(),
         )
     }
