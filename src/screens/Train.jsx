@@ -19,11 +19,11 @@ const Train = ({ setCurrentView }) => {
   useEffect(() => {
     const countImages = async () => {
       try {
-        const countEisa = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
-        const countNotEisa = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
+        const eisaFiles = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
+        const notEisaFiles = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
 
-        setFileCountEisa(countEisa.length);
-        setFileCountNotEisa(countNotEisa.length);
+        setFileCountEisa(eisaFiles.length);
+        setFileCountNotEisa(notEisaFiles.length);
       } catch (error) {
         console.error("Error counting images: ", error);
       }
@@ -57,35 +57,18 @@ const Train = ({ setCurrentView }) => {
 
         for (let i = 0; i < totalFiles; i++) {
           const file = shuffledFiles[i];
+          const targetDir = i < trainCount ? 'train' : 'test';
+          const targetPath = `tauri-classification/${targetDir}/${trainDir}/${file.name}`;
 
-          if (i < trainCount) {
-            try {
-              await copyFile(
-                `tauri-classification/images/${sourceDir}/${file.name}`,
-                `tauri-classification/train/${trainDir}/${file.name}`,
-                {
-                  fromPathBaseDir: BaseDirectory.Document,
-                  toPathBaseDir: BaseDirectory.Document
-                }
-              );
-              console.log(`Copied ${file.name} to train/${trainDir}`);
-            } catch (error) {
-              console.error(`Failed to copy ${file.name} to train/${trainDir}: `, error);
-            }
-          } else {
-            try {
-              await copyFile(
-                `tauri-classification/images/${sourceDir}/${file.name}`,
-                `tauri-classification/test/${testDir}/${file.name}`,
-                {
-                  fromPathBaseDir: BaseDirectory.Document,
-                  toPathBaseDir: BaseDirectory.Document
-                }
-              );
-              console.log(`Copied ${file.name} to test/${testDir}`);
-            } catch (error) {
-              console.error(`Failed to copy ${file.name} to test/${testDir}: `, error);
-            }
+          try {
+            await copyFile(
+              `tauri-classification/images/${sourceDir}/${file.name}`,
+              targetPath,
+              { fromPathBaseDir: BaseDirectory.Document, toPathBaseDir: BaseDirectory.Document }
+            );
+            console.log(`Copied ${file.name} to ${targetDir}/${trainDir}`);
+          } catch (error) {
+            console.error(`Failed to copy ${file.name} to ${targetDir}/${trainDir}: `, error);
           }
         }
       };
@@ -146,10 +129,10 @@ const Train = ({ setCurrentView }) => {
         await writeFile(`${folderPath}/${fileName}`, uint8Array, { baseDir: BaseDirectory.Document });
         console.log(`Image saved to ${folderPath} as ${fileName}.`);
 
-        const countEisa = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
-        const countNotEisa = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
-        setFileCountEisa(countEisa.length);
-        setFileCountNotEisa(countNotEisa.length);
+        const eisaFiles = await readDir('tauri-classification/images/Eisa', { baseDir: BaseDirectory.Document });
+        const notEisaFiles = await readDir('tauri-classification/images/NotEisa', { baseDir: BaseDirectory.Document });
+        setFileCountEisa(eisaFiles.length);
+        setFileCountNotEisa(notEisaFiles.length);
       } catch (error) {
         console.error("Error saving image: ", error);
       }
