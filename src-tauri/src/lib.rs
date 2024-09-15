@@ -13,16 +13,10 @@ use burn::{
     },
     data::dataset::vision::{Annotation, ImageDatasetItem, PixelDepth},
     optim::SgdConfig,
-    prelude::Backend,
 };
 use model::ModelConfig;
 use predict::predict;
 use training::{train, TrainingConfig};
-
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 #[tauri::command]
 fn run_train() {
@@ -47,7 +41,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, run_train])
+        .invoke_handler(tauri::generate_handler![run_train, run_predict])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
