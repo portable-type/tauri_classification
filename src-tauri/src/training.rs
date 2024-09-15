@@ -16,7 +16,6 @@ use burn::{
     },
 };
 
-const NUM_CLASSES: u8 = 2;
 pub const ARTIFACT_DIR: &str = "/tmp/tauri-classification";
 
 impl<B: Backend> Cnn<B> {
@@ -52,7 +51,7 @@ impl<B: Backend> ValidStep<ClassificationBatch<B>, ClassificationOutput<B>> for 
 pub struct TrainingConfig {
     pub model: ModelConfig,
     pub optimizer: SgdConfig,
-    #[config(default = 30)]
+    #[config(default = 1)]
     pub num_epochs: usize,
     #[config(default = 128)]
     pub batch_size: usize,
