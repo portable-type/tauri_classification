@@ -71,7 +71,7 @@ impl<B: Backend> Cnn<B> {
         let x = self.pool.forward(x);
         let x = self.dropout.forward(x);
 
-        let x: Tensor<B, 2> = x.clone().flatten(1, 3);
+        let x: Tensor<B, 2> = x.flatten(1, 3);
 
         let x = self.fc1.forward(x);
         let x = self.activation.forward(x);
