@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BaseDirectory, writeFile, mkdir, writeTextFile, readDir, copyFile } from '@tauri-apps/plugin-fs';
 import { v4 as uuidv4 } from 'uuid';
 import VideoPreview from '../components/VideoPreview';
@@ -7,12 +7,14 @@ import Controls from '../components/Controls';
 import CapturedImage from '../components/CapturedImage';
 import FileCounts from '../components/FileCounts';
 import '../App.css';
+import { invoke } from '@tauri-apps/api/core';
 
 const Train = ({ setCurrentView }) => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [label, setLabel] = useState(null);
   const [fileCountEisa, setFileCountEisa] = useState(0);
   const [fileCountNotEisa, setFileCountNotEisa] = useState(0);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const countImages = async () => {
@@ -147,15 +149,25 @@ const Train = ({ setCurrentView }) => {
     }
   };
 
+  async function run_train() {
+    await invoke('run_train');
+  }
+
+  const handleSave = async () => {
+    await copyImages();
+    await run_train();
+    setCurrentView('Save');
+  };
+
   return (
     <div className="train-container">
-      <VideoPreview onStreamError={(err) => console.error("Stream Error: ", err)} />
+      <VideoPreview ref={videoRef} onStreamError={(err) => console.error("Stream Error: ", err)} />
 
       <LabelButtons label={label} setLabel={setLabel} />
 
       <Controls
         onCapture={captureImage}
-        onSave={copyImages}
+        onSave={handleSave}
         onShowImages={() => setCurrentView('Images')}
         isCaptureDisabled={!label}
       />
