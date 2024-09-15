@@ -16,7 +16,7 @@ use burn::{
 };
 use model::ModelConfig;
 use predict::predict;
-use training::{train, TrainingConfig};
+use training::{train, TrainingConfig, ARTIFACT_DIR};
 
 #[tauri::command]
 fn run_train() {
@@ -29,8 +29,12 @@ fn run_train() {
 #[tauri::command]
 fn run_predict() -> String {
     type MyBackend = Wgpu<f32, i32>;
-    let img =
-        image::open(dirs::document_dir().unwrap().join("predict.png")).expect("disable load image");
+    let img = image::open(
+        dirs::document_dir()
+            .unwrap()
+            .join(format!("{ARTIFACT_DIR}/predict.png")),
+    )
+    .expect("disable load image");
     let item = img.into_rgb8().into_raw();
     let data = ImageDatasetItem {
         image: item.into_iter().map(PixelDepth::U8).collect(),
