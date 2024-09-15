@@ -6,7 +6,7 @@ import { invoke } from '@tauri-apps/api/core';
 
 const Run = () => {
   const videoRef = useRef(null);
-  const [currentFrame, setCurrentFrame] = useState("");
+  const currentFrameRef = useRef(null);
   const [labels, setLabels] = useState("");
 
   async function run_predict() {
@@ -14,9 +14,9 @@ const Run = () => {
   }
 
   async function updatePredictImage() {
-    if (currentFrame) {
+    if (currentFrameRef.current) {
       try {
-        const response = await fetch(currentFrame);
+        const response = await fetch(currentFrameRef.current);
         const blob = await response.blob();
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
@@ -56,8 +56,7 @@ const Run = () => {
 
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, drawWidth, drawHeight);
 
-        const image = canvas.toDataURL('image/png');
-        setCurrentFrame(image);
+        currentFrameRef.current = canvas.toDataURL('image/png');
         updatePredictImage();
       }
     };
@@ -65,7 +64,7 @@ const Run = () => {
     const intervalId = setInterval(captureFrame, 1000);
 
     return () => clearInterval(intervalId);
-  }, [currentFrame]);
+  }, []);
 
   return (
     <div className="run-container">
