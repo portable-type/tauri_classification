@@ -22,7 +22,8 @@ pub fn predict<B: Backend>(device: B::Device, item: ImageDatasetItem) -> String 
     let model: Cnn<B> = config.model.init(&device).load_record(record);
 
     let batcher = ClassificationBatcher::new(device);
-    let batch = batcher.batch(vec![item]);
+    let vec_item = vec![item];
+    let batch = batcher.batch(vec_item);
     let output = model.forward(batch.images);
     let predicted = output.argmax(1).flatten::<1>(0, 1).into_scalar();
     format!("{}", predicted)
