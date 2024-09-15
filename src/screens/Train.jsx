@@ -8,6 +8,7 @@ import CapturedImage from '../components/CapturedImage';
 import FileCounts from '../components/FileCounts';
 import '../App.css';
 import '../screens/Save';
+import '../screens/Run';
 import { invoke } from '@tauri-apps/api/core';
 
 const Train = ({ setCurrentView }) => {
@@ -158,13 +159,14 @@ const Train = ({ setCurrentView }) => {
   };
 
   async function run_train() {
-    await invoke('run_train');
+    // await invoke('run_train');
   }
 
   const handleSave = async () => {
     await copyImages();
     await run_train();
-    setCurrentView('Save');
+    // setCurrentView('Save');
+    setCurrentView('Run');
   };
 
   return (
