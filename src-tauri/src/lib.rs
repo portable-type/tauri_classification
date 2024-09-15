@@ -27,8 +27,11 @@ fn run_train() {
 }
 
 #[tauri::command]
-fn run_predict(item: Vec<u8>) -> String {
+fn run_predict() -> String {
     type MyBackend = Wgpu<f32, i32>;
+    let img =
+        image::open(dirs::document_dir().unwrap().join("predict.png")).expect("disable load image");
+    let item = img.into_rgb8().into_raw();
     let data = ImageDatasetItem {
         image: item.into_iter().map(PixelDepth::U8).collect(),
         annotation: Annotation::Label(0),

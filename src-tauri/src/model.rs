@@ -1,5 +1,3 @@
-use std::fs::write;
-
 use burn::{
     nn::{
         conv::{Conv2d, Conv2dConfig},
@@ -8,7 +6,6 @@ use burn::{
     },
     prelude::*,
 };
-use dirs::download_dir;
 
 #[derive(Module, Debug)]
 pub struct Cnn<B: Backend> {
@@ -29,7 +26,7 @@ pub struct Cnn<B: Backend> {
 pub struct ModelConfig {
     num_classes: usize,
     hidden_size: usize,
-    #[config(default = "0.5")]
+    #[config(default = "0.4")]
     dropout: f64,
 }
 
@@ -75,14 +72,10 @@ impl<B: Backend> Cnn<B> {
         let x = self.dropout.forward(x);
 
         let x: Tensor<B, 2> = x.clone().flatten(1, 3);
-        
 
         let x = self.fc1.forward(x);
         let x = self.activation.forward(x);
         let x = self.dropout.forward(x);
-
-        let files = download_dir().unwrap().join("model.txt");
-        let _ = write(files, format!("{:?}", x));
 
         self.fc2.forward(x)
     }
