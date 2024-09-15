@@ -97,10 +97,13 @@ const Train = ({ setCurrentView }) => {
       return;
     }
 
+    
+
     if (videoRef.current) {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const video = videoRef.current;
+      console.log(video);
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
@@ -129,7 +132,7 @@ const Train = ({ setCurrentView }) => {
 
         await mkdir(folderPath, { recursive: true, baseDir: BaseDirectory.Document });
 
-        const labelTxt = {"label": ["Eisa", "NotEisa"]};
+        const labelTxt = { "label": ["Eisa", "NotEisa"] };
         const txtContents = JSON.stringify(labelTxt);
         await writeTextFile('tauri-classification/class.json', txtContents, { baseDir: BaseDirectory.Document });
 
@@ -161,7 +164,7 @@ const Train = ({ setCurrentView }) => {
 
   return (
     <div className="train-container">
-      <VideoPreview ref={videoRef} onStreamError={(err) => console.error("Stream Error: ", err)} />
+      <VideoPreview videoRef={videoRef} onStreamError={(err) => console.error("Stream Error: ", err)} />
 
       <LabelButtons label={label} setLabel={setLabel} />
 

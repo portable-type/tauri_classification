@@ -1,7 +1,6 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-const VideoPreview = ({ onStreamError }) => {
-  const videoRef = useRef(null);
+const VideoPreview = ({ videoRef, onStreamError }) => {
 
   useEffect(() => {
     const startCamera = async () => {
