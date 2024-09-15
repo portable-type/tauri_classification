@@ -7,13 +7,13 @@ const TabSelector = ({ activeTab, setActiveTab }) => {
         className={`tab-button ${activeTab === 'Eisa' ? 'active' : ''}`}
         onClick={() => setActiveTab('Eisa')}
       >
-        Eisa
+        エイサー
       </button>
       <button
         className={`tab-button ${activeTab === 'NotEisa' ? 'active' : ''}`}
         onClick={() => setActiveTab('NotEisa')}
       >
-        NotEisa
+        エイサーじゃない
       </button>
     </div>
   );
