@@ -56,7 +56,7 @@ const Run = () => {
 
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, drawWidth, drawHeight);
 
-        const image = canvas.toDataURL('image/jpeg');
+        const image = canvas.toDataURL('image/png');
         setCurrentFrame(image);
         updatePredictImage();
       }
@@ -71,7 +71,6 @@ const Run = () => {
     <div className="run-container">
       <VideoPreview videoRef={videoRef} onStreamError={(err) => console.error("Stream Error: ", err)} />
       <p>{labels}</p>
-      {currentFrame && <img src={currentFrame} alt="Current Frame" />}
     </div>
   );
 };

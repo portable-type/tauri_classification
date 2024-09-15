@@ -165,7 +165,7 @@ const Train = ({ setCurrentView }) => {
   const handleSave = async () => {
     await copyImages();
     await run_train();
-    // setCurrentView('Save');
+    await setCurrentView('Save');
     setCurrentView('Run');
   };
 

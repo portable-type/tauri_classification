@@ -14,6 +14,7 @@ use burn::{
     data::dataset::vision::{Annotation, ImageDatasetItem, PixelDepth},
     optim::SgdConfig,
 };
+use dirs::document_dir;
 use model::ModelConfig;
 use predict::predict;
 use training::{train, TrainingConfig};
@@ -29,11 +30,14 @@ fn run_train() {
 #[tauri::command]
 fn run_predict() -> String {
     type MyBackend = Wgpu<f32, i32>;
-    let img =
-        image::open(dirs::document_dir().unwrap().join("predict.png")).expect("disable load image");
-    let item = img.into_rgb8().into_raw();
+    let image_path = document_dir()
+        .unwrap()
+        .join("tauri-classification")
+        .join("predict.png");
+    let img = image::open(image_path).unwrap();
+    let item = img.into_rgba8().into_raw();
     let data = ImageDatasetItem {
-        image: item.into_iter().map(PixelDepth::U8).collect(),
+        image: item.into_iter().map(|data| PixelDepth::U8(data)).collect(),
         annotation: Annotation::Label(0),
     };
     predict::<MyBackend>(WgpuDevice::default(), data)
