@@ -16,7 +16,6 @@ use burn::{
     },
 };
 
-const NUM_CLASSES: u8 = 2;
 pub const ARTIFACT_DIR: &str = "/tmp/tauri-classification";
 
 impl<B: Backend> Cnn<B> {
