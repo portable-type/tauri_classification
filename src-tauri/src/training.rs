@@ -51,7 +51,7 @@ impl<B: Backend> ValidStep<ClassificationBatch<B>, ClassificationOutput<B>> for 
 pub struct TrainingConfig {
     pub model: ModelConfig,
     pub optimizer: SgdConfig,
-    #[config(default = 30)]
+    #[config(default = 1)]
     pub num_epochs: usize,
     #[config(default = 128)]
     pub batch_size: usize,
