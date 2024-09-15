@@ -8,7 +8,6 @@ import CapturedImage from '../components/CapturedImage';
 import FileCounts from '../components/FileCounts';
 import '../App.css';
 import { invoke } from '@tauri-apps/api/core';
-import { useOpenCv } from '../hooks/useOpenCv';
 
 const Train = ({ setCurrentView }) => {
   const [capturedImage, setCapturedImage] = useState(null);
@@ -16,8 +15,6 @@ const Train = ({ setCurrentView }) => {
   const [fileCountEisa, setFileCountEisa] = useState(0);
   const [fileCountNotEisa, setFileCountNotEisa] = useState(0);
   const videoRef = useRef(null);
-
-  const { loaded, cv } = useOpenCv();
 
   useEffect(() => {
     const countImages = async () => {
