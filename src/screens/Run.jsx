@@ -40,9 +40,21 @@ const Run = () => {
         const context = canvas.getContext('2d');
         const video = videoRef.current;
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const size = 720;
+        canvas.width = size;
+        canvas.height = size;
+
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        let drawWidth = size;
+        let drawHeight = size;
+
+        if (aspectRatio > 1) {
+          drawHeight = size / aspectRatio;
+        } else {
+          drawWidth = size * aspectRatio;
+        }
+
+        context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight, 0, 0, drawWidth, drawHeight);
 
         const image = canvas.toDataURL('image/jpeg');
         setCurrentFrame(image);
