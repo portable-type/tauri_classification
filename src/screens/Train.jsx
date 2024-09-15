@@ -7,6 +7,7 @@ import Controls from '../components/Controls';
 import CapturedImage from '../components/CapturedImage';
 import FileCounts from '../components/FileCounts';
 import '../App.css';
+import '../screens/Save';
 import { invoke } from '@tauri-apps/api/core';
 
 const Train = ({ setCurrentView }) => {
