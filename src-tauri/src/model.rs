@@ -1,14 +1,11 @@
-use std::fs::write;
-
 use burn::{
     nn::{
         conv::{Conv2d, Conv2dConfig},
         pool::{MaxPool2d, MaxPool2dConfig},
-        Dropout, DropoutConfig, Linear, LinearConfig, PaddingConfig2d, Relu,
+        Dropout, DropoutConfig, Linear, LinearConfig, Relu,
     },
     prelude::*,
 };
-use dirs::download_dir;
 
 #[derive(Module, Debug)]
 pub struct Cnn<B: Backend> {
@@ -25,47 +22,33 @@ pub struct Cnn<B: Backend> {
     fc2: Linear<B>,
 }
 
-impl<B: Backend> Cnn<B> {
-    pub fn new(num_class: usize, device: &Device<B>) -> Self {
-        let conv1 = Conv2dConfig::new([3, 12], [3, 3])
-            .with_padding(PaddingConfig2d::Same)
-            .init(device);
-        let conv2 = Conv2dConfig::new([32, 32], [3, 3])
-            .with_padding(PaddingConfig2d::Same)
-            .init(device);
-        let conv3 = Conv2dConfig::new([32, 64], [3, 3])
-            .with_padding(PaddingConfig2d::Same)
-            .init(device);
-        let conv4 = Conv2dConfig::new([64, 64], [3, 3])
-            .with_padding(PaddingConfig2d::Same)
-            .init(device);
-        let conv5 = Conv2dConfig::new([64, 128], [3, 3])
-            .with_padding(PaddingConfig2d::Same)
-            .init(device);
-        let conv6 = Conv2dConfig::new([128, 128], [3, 3])
-            .with_padding(PaddingConfig2d::Same)
-            .init(device);
-        let pool = MaxPool2dConfig::new([2, 2]).with_strides([2, 2]).init();
-        let dropout = DropoutConfig::new(0.3).init();
-        let activation = Relu::new();
-        let fc1 = LinearConfig::new(128 * 4 * 4, 512).init(device);
-        let fc2 = LinearConfig::new(512, num_class).init(device);
+#[derive(Config, Debug)]
+pub struct ModelConfig {
+    num_classes: usize,
+    hidden_size: usize,
+    #[config(default = "0.4")]
+    dropout: f64,
+}
 
-        Self {
-            activation,
-            dropout,
-            pool,
-            conv1,
-            conv2,
-            conv3,
-            conv4,
-            conv5,
-            conv6,
-            fc1,
-            fc2,
+impl ModelConfig {
+    pub fn init<B: Backend>(&self, device: &B::Device) -> Cnn<B> {
+        Cnn {
+            activation: Relu::new(),
+            dropout: DropoutConfig::new(self.dropout).init(),
+            pool: MaxPool2dConfig::new([2, 2]).init(),
+            conv1: Conv2dConfig::new([3, 12], [3, 3]).init(device),
+            conv2: Conv2dConfig::new([32, 32], [3, 3]).init(device),
+            conv3: Conv2dConfig::new([32, 64], [3, 3]).init(device),
+            conv4: Conv2dConfig::new([64, 64], [3, 3]).init(device),
+            conv5: Conv2dConfig::new([64, 128], [3, 3]).init(device),
+            conv6: Conv2dConfig::new([128, 128], [3, 3]).init(device),
+            fc1: LinearConfig::new(36992, self.hidden_size).init(device),
+            fc2: LinearConfig::new(self.hidden_size, self.num_classes).init(device),
         }
     }
+}
 
+impl<B: Backend> Cnn<B> {
     pub fn forward(&self, x: Tensor<B, 4>) -> Tensor<B, 2> {
         let x = self.conv1.forward(x);
         let x = self.activation.forward(x);
@@ -88,14 +71,11 @@ impl<B: Backend> Cnn<B> {
         let x = self.pool.forward(x);
         let x = self.dropout.forward(x);
 
-        let x = x.flatten(1, 3);
+        let x: Tensor<B, 2> = x.clone().flatten(1, 3);
 
         let x = self.fc1.forward(x);
         let x = self.activation.forward(x);
         let x = self.dropout.forward(x);
-
-        let files = download_dir().unwrap().join("model.txt");
-        let _ = write(files, format!("{:?}", x));
 
         self.fc2.forward(x)
     }

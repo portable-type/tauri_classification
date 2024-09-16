@@ -1,7 +1,7 @@
 use crate::{
     data::{ClassificationBatch, ClassificationBatcher},
     dataset::DataSets,
-    model::Cnn,
+    model::{Cnn, ModelConfig},
 };
 use burn::{
     data::{dataloader::DataLoaderBuilder, dataset::vision::ImageFolderDataset},
@@ -16,8 +16,7 @@ use burn::{
     },
 };
 
-const NUM_CLASSES: u8 = 2;
-const ARTIFACT_DIR: &str = "/tmp/tauri-classification";
+pub const ARTIFACT_DIR: &str = "/tmp/tauri-classification";
 
 impl<B: Backend> Cnn<B> {
     pub fn forward_classification(
@@ -50,10 +49,11 @@ impl<B: Backend> ValidStep<ClassificationBatch<B>, ClassificationOutput<B>> for 
 
 #[derive(Config)]
 pub struct TrainingConfig {
+    pub model: ModelConfig,
     pub optimizer: SgdConfig,
-    #[config(default = 5)]
+    #[config(default = 20)]
     pub num_epochs: usize,
-    #[config(default = 128)]
+    #[config(default = 256)]
     pub batch_size: usize,
     #[config(default = 4)]
     pub num_workers: usize,
@@ -70,7 +70,6 @@ fn create_artifact_dir(artifact_dir: &str) {
 }
 
 pub fn train<B: AutodiffBackend>(config: TrainingConfig, device: B::Device) {
-    println!("Training Start!!");
     create_artifact_dir(ARTIFACT_DIR);
 
     config
@@ -82,20 +81,17 @@ pub fn train<B: AutodiffBackend>(config: TrainingConfig, device: B::Device) {
     // Dataloaders
     let batcher_train = ClassificationBatcher::<B>::new(device.clone());
     let batcher_valid = ClassificationBatcher::<B::InnerBackend>::new(device.clone());
-    println!("Dataloader is exists!!");
 
     let dataloader_train = DataLoaderBuilder::new(batcher_train)
         .batch_size(config.batch_size)
         .shuffle(config.seed)
         .num_workers(config.num_workers)
         .build(ImageFolderDataset::dataset_train());
-    println!("train data is collected!!");
 
     let dataloader_test = DataLoaderBuilder::new(batcher_valid)
         .batch_size(config.batch_size)
         .num_workers(config.num_workers)
         .build(ImageFolderDataset::dataset_test());
-    println!("train data is collected!!");
 
     // Learner config
     let learner = LearnerBuilder::new(ARTIFACT_DIR)
@@ -108,11 +104,10 @@ pub fn train<B: AutodiffBackend>(config: TrainingConfig, device: B::Device) {
         .num_epochs(config.num_epochs)
         .summary()
         .build(
-            Cnn::new(NUM_CLASSES.into(), &device),
+            config.model.init(&device),
             config.optimizer.init(),
             config.learning_rate,
         );
-    println!("learner is collected!!");
 
     // Training
     let model_trained = learner.fit(dataloader_train, dataloader_test);

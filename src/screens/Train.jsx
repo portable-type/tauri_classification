@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { BaseDirectory, writeFile, mkdir, writeTextFile, readDir, copyFile } from '@tauri-apps/plugin-fs';
+import React, { useState, useEffect, useRef } from 'react';
+import { BaseDirectory, writeFile, mkdir, readDir, copyFile } from '@tauri-apps/plugin-fs';
 import { v4 as uuidv4 } from 'uuid';
 import VideoPreview from '../components/VideoPreview';
 import LabelButtons from '../components/LabelButtons';
@@ -7,12 +7,16 @@ import Controls from '../components/Controls';
 import CapturedImage from '../components/CapturedImage';
 import FileCounts from '../components/FileCounts';
 import '../App.css';
+import '../screens/Save';
+import '../screens/Run';
+import { invoke } from '@tauri-apps/api/core';
 
 const Train = ({ setCurrentView }) => {
   const [capturedImage, setCapturedImage] = useState(null);
   const [label, setLabel] = useState(null);
   const [fileCountEisa, setFileCountEisa] = useState(0);
   const [fileCountNotEisa, setFileCountNotEisa] = useState(0);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const countImages = async () => {
@@ -50,29 +54,40 @@ const Train = ({ setCurrentView }) => {
 
         const shuffledFiles = validFiles.sort(() => 0.5 - Math.random());
 
+        await mkdir(`tauri-classification/train/${trainDir}`, { recursive: true, baseDir: BaseDirectory.Document });
+        await mkdir(`tauri-classification/test/${testDir}`, { recursive: true, baseDir: BaseDirectory.Document });
+
         for (let i = 0; i < totalFiles; i++) {
           const file = shuffledFiles[i];
 
           if (i < trainCount) {
-            await copyFile(
-              `tauri-classification/images/${sourceDir}/${file.name}`,
-              `tauri-classification/train/${trainDir}/${file.name}`,
-              {
-                fromPathBaseDir: BaseDirectory.Document,
-                toPathBaseDir: BaseDirectory.Document
-              }
-            );
-            console.log(`Copied ${file.name} to train/${trainDir}`);
+            try {
+              await copyFile(
+                `tauri-classification/images/${sourceDir}/${file.name}`,
+                `tauri-classification/train/${trainDir}/${file.name}`,
+                {
+                  fromPathBaseDir: BaseDirectory.Document,
+                  toPathBaseDir: BaseDirectory.Document
+                }
+              );
+              console.log(`Copied ${file.name} to train/${trainDir}`);
+            } catch (error) {
+              console.error(`Failed to copy ${file.name} to train/${trainDir}: `, error);
+            }
           } else {
-            await copyFile(
-              `tauri-classification/images/${sourceDir}/${file.name}`,
-              `tauri-classification/test/${testDir}/${file.name}`,
-              {
-                fromPathBaseDir: BaseDirectory.Document,
-                toPathBaseDir: BaseDirectory.Document
-              }
-            );
-            console.log(`Copied ${file.name} to test/${testDir}`);
+            try {
+              await copyFile(
+                `tauri-classification/images/${sourceDir}/${file.name}`,
+                `tauri-classification/test/${testDir}/${file.name}`,
+                {
+                  fromPathBaseDir: BaseDirectory.Document,
+                  toPathBaseDir: BaseDirectory.Document
+                }
+              );
+              console.log(`Copied ${file.name} to test/${testDir}`);
+            } catch (error) {
+              console.error(`Failed to copy ${file.name} to test/${testDir}: `, error);
+            }
           }
         }
       };
@@ -127,10 +142,6 @@ const Train = ({ setCurrentView }) => {
 
         await mkdir(folderPath, { recursive: true, baseDir: BaseDirectory.Document });
 
-        const labelTxt = {"label": ["Eisa", "NotEisa"]};
-        const txtContents = JSON.stringify(labelTxt);
-        await writeTextFile('tauri-classification/class.json', txtContents, { baseDir: BaseDirectory.Document });
-
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
 
@@ -147,15 +158,26 @@ const Train = ({ setCurrentView }) => {
     }
   };
 
+  async function run_train() {
+    await invoke('run_train');
+  }
+
+  const handleSave = async () => {
+    await copyImages();
+    await run_train();
+    await setCurrentView('Save');
+    setCurrentView('Run');
+  };
+
   return (
     <div className="train-container">
-      <VideoPreview onStreamError={(err) => console.error("Stream Error: ", err)} />
+      <VideoPreview videoRef={videoRef} onStreamError={(err) => console.error("Stream Error: ", err)} />
 
       <LabelButtons label={label} setLabel={setLabel} />
 
       <Controls
         onCapture={captureImage}
-        onSave={copyImages}
+        onSave={handleSave}
         onShowImages={() => setCurrentView('Images')}
         isCaptureDisabled={!label}
       />

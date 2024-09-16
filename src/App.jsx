@@ -17,7 +17,7 @@ function App() {
       case 'Save':
         return <Save />;
       case 'Run':
-        return <Run />;
+        return <Run setCurrentView={setCurrentView}/>;
       default:
         return <Train setCurrentView={setCurrentView} />;
     }
