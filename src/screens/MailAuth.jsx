@@ -14,6 +14,7 @@ const MailAuth = (setCurrentView) => {
 
     const signIn = async () => {
         await createUserWithEmailAndPassword(auth, email, password);
+        setCurrentView('Train');
     };
 
     if (loading) {
