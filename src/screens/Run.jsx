@@ -1,10 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import VideoPreview from '../components/VideoPreview';
 import '../App.css';
+import '../screens/Train';
 import { writeFile, BaseDirectory } from '@tauri-apps/plugin-fs';
 import { invoke } from '@tauri-apps/api/core';
 
-const Run = () => {
+const Run = ({ setCurrentView }) => {
   const videoRef = useRef(null);
   const currentFrameRef = useRef(null);
   const [labels, setLabels] = useState("");
@@ -68,8 +69,11 @@ const Run = () => {
 
   return (
     <div className="run-container">
+      <button className="back-button" onClick={() => setCurrentView('Train')}>
+        戻る
+      </button>
       <VideoPreview videoRef={videoRef} onStreamError={(err) => console.error("Stream Error: ", err)} />
-      <p>{labels}</p>
+      <p>{labels === "0" ? "エイサー" : labels === "1" ? "エイサーじゃない" : "予測中..."}</p>
     </div>
   );
 };

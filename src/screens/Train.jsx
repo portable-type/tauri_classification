@@ -159,7 +159,7 @@ const Train = ({ setCurrentView }) => {
   };
 
   async function run_train() {
-    // await invoke('run_train');
+    await invoke('run_train');
   }
 
   const handleSave = async () => {
