@@ -5,15 +5,16 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
 import Train from "./Train";
 
-const signIn = async () => {
-    await createUserWithEmailAndPassword(auth, email, password);
-};
 
 const MailAuth = (setCurrentView) => {
     const auth = getAuth(app);
     const [user, loading, error] = useAuthState(auth);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    const signIn = async () => {
+        await createUserWithEmailAndPassword(auth, email, password);
+    };
 
     if (loading) {
         return (
